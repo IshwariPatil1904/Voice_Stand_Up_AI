@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - VoiceStandup AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=soft-ui-v3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=soft-ui-v3">
+</head>
+<body class="auth-body">
+
+<div class="auth-card">
+
+    <!-- LEFT SIDE -->
+    <div class="left-section">
+
+        <h3 class="brand">VoiceStandup</h3>
+
+        <h1>Welcome Back!</h1>
+        <p class="subtitle">Sign in with your information below</p>
+
+        <form method="POST" action="/login">
+
+            <label>Email Address</label>
+            <input type="email" name="email" required>
+
+            <label>Password</label>
+            <input type="password" name="password" required>
+
+            <div class="form-row">
+                <div class="remember">
+                    <input type="checkbox">
+                    <span>Remember me</span>
+                </div>
+                <a href="#" class="forgot">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="login-btn">Continue</button>
+
+        </form>
+
+        {% if message %}
+        <div class="auth-error">{{ message }}</div>
+        {% endif %}
+
+        <p class="bottom-text">
+            Don't have an account?
+            <a href="/register">Create Account</a>
+        </p>
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="right-section">
+        <div class="illustration-container">
+            <img src="{{ url_for('static', filename='images/girl.png') }}" alt="Illustration">
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

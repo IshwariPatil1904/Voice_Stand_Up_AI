@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - VoiceStandup</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="app-body">
+
+<div class="navbar app-navbar">
+    <h2>VoiceStandup AI</h2>
+    <div class="nav-links">
+        {% if user %}
+        <span class="nav-user">{{ user }}</span>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/search">Search & History</a>
+        <a href="/logout">Logout</a>
+        {% else %}
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+        {% endif %}
+    </div>
+</div>
+
+<main class="page-shell">
+    <section class="surface-card">
+        <div class="card-head">
+            <div>
+                <p class="eyebrow">Application status</p>
+                <h1>{{ title }}</h1>
+                <p class="muted-text">{{ message }}</p>
+            </div>
+        </div>
+
+        <div class="hero-actions">
+            {% if user %}
+            <a href="/dashboard" class="btn-primary app-btn">Back to Dashboard</a>
+            <a href="/record" class="btn-secondary app-btn alt">Open Recorder</a>
+            {% else %}
+            <a href="/login" class="btn-primary app-btn">Go to Login</a>
+            <a href="/register" class="btn-secondary app-btn alt">Create Account</a>
+            {% endif %}
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VoiceStandup AI{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=soft-ui-v3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=soft-ui-v3">
+    {% block head %}{% endblock %}
+</head>
+<body class="app-body unified-dark-body {{ body_class|default('') }}">
+<div class="unified-app-shell">
+    <aside class="unified-sidebar">
+        <div class="unified-brand">VoiceStandup AI</div>
+        <nav class="unified-nav">
+            <a href="/dashboard" class="{{ 'active' if active_page == 'dashboard' else '' }}">Dashboard</a>
+            <a href="{{ '/meeting/' ~ active_meeting if active_meeting else '/record' }}" class="{{ 'active' if active_page == 'meeting' else '' }}">Live Meeting</a>
+            <a href="/dashboard#analytics" class="{{ 'active' if active_page == 'analytics' else '' }}">Analytics</a>
+            <a href="/search" class="{{ 'active' if active_page in ['history', 'search'] else '' }}">Search & History</a>
+            <a href="/dashboard#settings" class="{{ 'active' if active_page == 'settings' else '' }}">Settings</a>
+        </nav>
+    </aside>
+
+    <section class="unified-workspace">
+        <header class="unified-topbar">
+            <div class="unified-title">
+                <span class="menu-lines"></span>
+                <h1>{% block page_heading %}VoiceStandup AI{% endblock %}</h1>
+            </div>
+            <div class="unified-actions">
+                {% block topbar_actions %}{% endblock %}
+                {% if active_meeting %}
+                <span class="meeting-code-chip">Meeting ID: {{ active_meeting }}</span>
+                {% endif %}
+                <span class="profile-avatar">{{ user[:1]|upper if user else 'U' }}</span>
+                <span class="profile-name">{{ user or 'User' }}</span>
+            </div>
+        </header>
+
+        <main class="unified-content">
+            {% block content %}{% endblock %}
+        </main>
+    </section>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

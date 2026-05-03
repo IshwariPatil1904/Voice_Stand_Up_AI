@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceStandup AI Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=soft-ui-v3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=soft-ui-v3">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.7.1/socket.io.min.js"></script>
+</head>
+<body class="app-body dashboard-body">
+    <div class="saas-shell dashboard-frame">
+    <aside class="saas-sidebar dashboard-sidebar">
+        <div class="sidebar-brand compact-brand">
+            <strong>VoiceStandup AI</strong>
+        </div>
+
+        <nav class="sidebar-nav screenshot-nav">
+            <a href="/dashboard" class="active">
+                <span class="nav-symbol"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><path d="M4 11 12 4l8 7v8H6v-6h5v6h7v-7"/></svg></span>
+                Dashboard
+            </a>
+            <a href="/meeting">
+                <span class="nav-symbol"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><path d="M12 4v8m-4 0a4 4 0 0 0 8 0V6a4 4 0 0 0-8 0v6m-2 0a6 6 0 0 0 12 0M12 18v3"/></svg></span>
+                Live Meeting
+            </a>
+            <a href="/analytics">
+                <span class="nav-symbol"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><path d="M5 19V9m7 10V5m7 14v-8M4 19h16"/></svg></span>
+                Analytics
+            </a>
+            <a href="/search">
+                <span class="nav-symbol"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg></span>
+                Search &amp; History
+            </a>
+            <a href="/settings">
+                <span class="nav-symbol"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm8 4h2M2 12h2m13.7-5.7 1.4-1.4M4.9 19.1l1.4-1.4m0-11.4L4.9 4.9m14.2 14.2-1.4-1.4"/></svg></span>
+                Settings
+            </a>
+        </nav>
+    </aside>
+
+    <div class="saas-main dashboard-workspace">
+        <header class="dashboard-topbar screenshot-topbar">
+            <div class="topbar-title">
+                <span class="menu-lines"></span>
+                <h2>Dashboard</h2>
+            </div>
+
+            <div class="topbar-actions">
+                <a href="/search" class="icon-button search-button" aria-label="Search">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </a>
+                <div class="notification-menu-wrap">
+                    <button type="button" class="icon-button notify-button has-alert" id="notificationButton" aria-label="Notifications" aria-expanded="false" aria-controls="notificationDropdown"></button>
+                    <div class="notification-dropdown" id="notificationDropdown">
+                        <div class="notification-empty">No notifications yet.</div>
+                    </div>
+                </div>
+                <div class="profile-menu-wrap">
+                    <button type="button" class="profile-avatar" id="profileMenuButton" aria-label="Open user menu" aria-expanded="false" aria-controls="profileDropdown">{{ user[:1]|upper }}</button>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <a href="/profile" class="profile-dropdown-item">Profile</a>
+                        <a href="/settings" class="profile-dropdown-item">Settings</a>
+                        <a href="/logout" class="profile-dropdown-item">Logout</a>
+                    </div>
+                </div>
+                <span class="profile-name">{{ user }}</span>
+            </div>
+        </header>
+
+        <main class="dashboard-content screenshot-content">
+            {% if message %}
+            <div class="banner">{{ message }}</div>
+            {% endif %}
+
+            <section class="screenshot-welcome">
+                <h1>Welcome back, <span>{{ user }}</span></h1>
+                <p>AI-powered meeting insights at your fingertips.</p>
+            </section>
+
+            <section class="screenshot-kpis">
+                <div class="metric-card">
+                    <span class="metric-icon blue"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><path d="M7 3v4m10-4v4M5 8h14M5 5h14v15H5z"/></svg></span>
+                    <div>
+                        <strong id="meetings">0</strong>
+                        <p>Total Meetings</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-icon red"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><path d="M12 4 3 20h18zM12 9v5m0 3h.01"/></svg></span>
+                    <div>
+                        <strong id="blockers">0</strong>
+                        <p>Blockers Found</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-icon teal"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><path d="M5 12l5 5L20 7"/></svg></span>
+                    <div>
+                        <strong id="tasks">0</strong>
+                        <p>Tasks Completed</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-icon purple"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 8a7 7 0 0 1 14 0z"/></svg></span>
+                    <div>
+                        <strong id="users">0</strong>
+                        <p>Active Users</p>
+                    </div>
+                </div>
+
+                <a href="/analytics" class="view-all-card">View All</a>
+            </section>
+
+            <section id="analytics" class="screenshot-grid">
+                <div class="left-stack">
+                    <article class="screenshot-card chart-card">
+                        <div class="screenshot-card-head">
+                            <h3>Blocker Trends</h3>
+                            <span>Last 14 Days</span>
+                        </div>
+                        <div class="screenshot-chart">
+                            <canvas id="blockerChart"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="screenshot-card">
+                        <div class="screenshot-card-head">
+                            <h3>Recent Meetings</h3>
+                            <a href="/analytics">View All</a>
+                        </div>
+                        <div id="recent-meetings" class="recent-meeting-list">
+                            <div class="empty-state">No meetings recorded yet.</div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="right-stack">
+                    <article class="screenshot-card critical-card">
+                        <div class="screenshot-card-head">
+                            <h3>Critical Blockers</h3>
+                            <a href="/search?blockers=with">View All</a>
+                        </div>
+                        <div id="blocker-list" class="critical-list">
+                            <div class="empty-state">No blockers detected yet.</div>
+                        </div>
+                    </article>
+
+                    <article class="screenshot-card team-card">
+                        <div class="screenshot-card-head">
+                            <h3>Team Activity</h3>
+                            <a href="/search">View All</a>
+                        </div>
+                        <div id="team-activity" class="activity-list">
+                            <div class="empty-state">No team activity yet.</div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script>
+let blockerChart;
+let dashboardSocket;
+
+function initDashboardSocket() {
+    if (typeof io === "undefined") {
+        return;
+    }
+
+    dashboardSocket = io();
+
+    dashboardSocket.on("connect", () => {
+        console.log("Dashboard socket connected");
+    });
+
+    dashboardSocket.on("disconnect", () => {
+        console.log("Dashboard socket disconnected");
+    });
+
+    dashboardSocket.on("dashboard_update", () => {
+        refreshDashboard();
+    });
+}
+
+function escapeHtml(value) {
+    return (value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+async function loadStats() {
+    const data = await fetchJson("/stats");
+
+    document.getElementById("meetings").innerText = data.meetings;
+    document.getElementById("blockers").innerText = data.blockers;
+    document.getElementById("tasks").innerText = data.tasks;
+    document.getElementById("users").innerText = data.users;
+}
+
+async function loadChart() {
+    const data = await fetchJson("/chart-data");
+    const canvas = document.getElementById("blockerChart");
+
+    if (blockerChart) {
+        blockerChart.destroy();
+    }
+
+    blockerChart = new Chart(canvas, {
+        type: "line",
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data: data.values,
+                borderColor: "#4a6cf7",
+                backgroundColor: "rgba(74, 108, 247, 0.18)",
+                borderWidth: 3,
+                pointRadius: 3,
+                pointBackgroundColor: "#ffffff",
+                pointBorderColor: "#4a6cf7",
+                pointBorderWidth: 2,
+                fill: true,
+                tension: 0.38
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "#232946",
+                    padding: 10
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: "#8d96ad", font: { size: 11 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 6,
+                    grid: { color: "rgba(141, 150, 173, 0.16)" },
+                    ticks: {
+                        precision: 0,
+                        color: "#8d96ad",
+                        font: { size: 11 }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function meetingDateLabel(value) {
+    if (!value) {
+        return "Today";
+    }
+
+    const datePart = value.split(" ")[0];
+    const date = new Date(`${datePart}T00:00:00`);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const toKey = (item) => item.toISOString().slice(0, 10);
+
+    if (datePart === toKey(today)) {
+        return "Today";
+    }
+
+    if (datePart === toKey(yesterday)) {
+        return "Yesterday";
+    }
+
+    if (!Number.isNaN(date.getTime())) {
+        return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    return datePart;
+}
+
+function calendarChip(value) {
+    if (!value) {
+        return "AI";
+    }
+
+    const datePart = value.split(" ")[0];
+    const date = new Date(`${datePart}T00:00:00`);
+
+    if (Number.isNaN(date.getTime())) {
+        return "AI";
+    }
+
+    return String(date.getDate()).padStart(2, "0");
+}
+
+function renderRecentMeetings(items) {
+    const container = document.getElementById("recent-meetings");
+
+    if (!items || items.length === 0) {
+        container.innerHTML = `<div class="empty-state">No meetings recorded yet.</div>`;
+        return;
+    }
+
+    container.innerHTML = items.map((item) => `
+        <a class="meeting-row" href="${escapeHtml(item.url || "/search")}">
+            <span class="calendar-chip">${escapeHtml(calendarChip(item.created_at))}</span>
+            <div class="meeting-copy">
+                <small>${escapeHtml(meetingDateLabel(item.created_at))}</small>
+                <strong>${escapeHtml(item.title)}</strong>
+            </div>
+            <span class="${item.blockers > 0 ? "mini-risk" : "mini-safe"}">${item.blockers > 0 ? item.blockers + (item.blockers === 1 ? " blocker" : " blockers") : "clear"}</span>
+            <span class="row-arrow">></span>
+        </a>
+    `).join("");
+}
+
+function renderBlockers(items) {
+    const container = document.getElementById("blocker-list");
+
+    if (!items || items.length === 0) {
+        container.innerHTML = `<div class="empty-state">No blockers detected yet.</div>`;
+        return;
+    }
+
+    container.innerHTML = items.slice(0, 5).map((item) => `
+        <a class="critical-row" href="${escapeHtml(item.url || "/search?blockers=with")}">
+            <span class="alert-tile">!</span>
+            <div>
+                <strong>${escapeHtml(item.text)}</strong>
+                <p>${escapeHtml(item.source || "Meeting")} · ${escapeHtml(item.time || item.created_at || "Recently")}</p>
+            </div>
+        </a>
+    `).join("");
+}
+
+function renderTeamActivity(items) {
+    const container = document.getElementById("team-activity");
+
+    if (!items || items.length === 0) {
+        container.innerHTML = `<div class="empty-state">No team activity yet.</div>`;
+        return;
+    }
+
+    const firstItem = items[0];
+    const remainingItems = items.slice(1, 4);
+
+    container.innerHTML = `
+        <div class="activity-primary">
+            <span class="activity-avatar">${escapeHtml((firstItem.user || "U").slice(0, 1).toUpperCase())}</span>
+            <div>
+                <div class="activity-head">
+                    <strong>${escapeHtml(firstItem.user || "Team member")} ${escapeHtml(firstItem.action || "updated")}</strong>
+                    <span>${escapeHtml(firstItem.time || "Recently")}</span>
+                </div>
+                <p>${escapeHtml(firstItem.summary || firstItem.text || "Updated standup summary.")}</p>
+            </div>
+        </div>
+        ${remainingItems.map((item) => `
+            <div class="activity-mini ${item.blockers > 0 ? "activity-risk" : ""}">
+                <span>${item.blockers > 0 ? "!" : "OK"}</span>
+                <p>${escapeHtml(item.user || "Team member")} ${escapeHtml(item.action || "updated")}: ${escapeHtml(item.summary || item.text || "Updated meeting item.")}</p>
+            </div>
+        `).join("")}
+    `;
+}
+
+async function loadInsights() {
+    const data = await fetchJson("/dashboard-insights");
+
+    renderRecentMeetings(data.recent_meetings);
+    renderBlockers(data.blocker_highlights);
+    renderTeamActivity(data.team_activity);
+}
+
+function renderNotifications(items) {
+    const dropdown = document.getElementById("notificationDropdown");
+    const button = document.getElementById("notificationButton");
+
+    if (!dropdown || !button) {
+        return;
+    }
+
+    if (!items || items.length === 0) {
+        dropdown.innerHTML = `<div class="notification-empty">No notifications yet.</div>`;
+        button.classList.remove("has-alert");
+        return;
+    }
+
+    button.classList.add("has-alert");
+    dropdown.innerHTML = items.map((item) => `
+        <a class="notification-item" href="${escapeHtml(item.url || "/search")}">
+            <strong>${escapeHtml(item.title || "Update")}</strong>
+            <span>${escapeHtml(item.message || "")}</span>
+            <small>${escapeHtml(item.time || "Recently")}</small>
+        </a>
+    `).join("");
+}
+
+async function loadNotifications() {
+    const data = await fetchJson("/notifications");
+    renderNotifications(data.notifications || []);
+}
+
+async function refreshDashboard() {
+    try {
+        await Promise.all([loadStats(), loadChart(), loadInsights(), loadNotifications()]);
+    } catch (error) {
+        console.error("Dashboard refresh failed", error);
+    }
+}
+
+async function fetchJson(url) {
+    const response = await fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+    if (!response.ok) {
+        throw new Error(`Request failed: ${url}`);
+    }
+    return response.json();
+}
+
+refreshDashboard();
+initDashboardSocket();
+setInterval(() => {
+    loadStats();
+    loadInsights();
+    loadNotifications();
+}, 5000);
+
+const notificationButton = document.getElementById("notificationButton");
+const notificationDropdown = document.getElementById("notificationDropdown");
+
+if (notificationButton && notificationDropdown) {
+    notificationButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const isOpen = notificationDropdown.classList.toggle("open");
+        notificationButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!notificationDropdown.classList.contains("open")) {
+            return;
+        }
+
+        if (!notificationDropdown.contains(event.target) && !notificationButton.contains(event.target)) {
+            notificationDropdown.classList.remove("open");
+            notificationButton.setAttribute("aria-expanded", "false");
+        }
+    });
+}
+
+const profileMenuButton = document.getElementById("profileMenuButton");
+const profileDropdown = document.getElementById("profileDropdown");
+
+if (profileMenuButton && profileDropdown) {
+    profileMenuButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const isOpen = profileDropdown.classList.toggle("open");
+        profileMenuButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!profileDropdown.classList.contains("open")) {
+            return;
+        }
+
+        if (!profileDropdown.contains(event.target) && !profileMenuButton.contains(event.target)) {
+            profileDropdown.classList.remove("open");
+            profileMenuButton.setAttribute("aria-expanded", "false");
+        }
+    });
+}
+</script>
+</body>
+</html>

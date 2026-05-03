@@ -1,0 +1,268 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI Variable", "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+:root {
+    --font-lg: 24px;
+    --font-md: 20px;
+    --font-sm: 16px;
+    --font-body: 14px;
+    --font-xs: 12px;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+    font-size: var(--font-body);
+}
+
+h1 {
+    font-size: var(--font-lg);
+    line-height: 1.2;
+}
+
+h2 {
+    font-size: var(--font-md);
+    line-height: 1.25;
+}
+
+h3 {
+    font-size: var(--font-sm);
+    line-height: 1.3;
+}
+
+small {
+    font-size: var(--font-xs);
+}
+
+/* ===== BODY BACKGROUND ===== */
+.auth-body {
+    height: 100vh;
+    background: linear-gradient(135deg, #6c8de6, #4f74d9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== MAIN CARD (INCREASED SIZE) ===== */
+.auth-card {
+    width: 1100px;   /* increased */
+    height: 600px;   /* increased */
+    background: #ffffff;
+    border-radius: 18px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+}
+
+/* ===== LEFT SECTION ===== */
+.left-section {
+    width: 50%;
+    padding: 80px;
+}
+
+.brand {
+    color: #4f74d9;
+    font-weight: bold;
+    font-size: 24px;   /* increased */
+    margin-bottom: 25px;
+}
+
+.left-section h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #777;
+    font-size: 15px;
+    margin-bottom: 35px;
+}
+
+/* ===== FORM ===== */
+.left-section label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #444;
+}
+
+.left-section input[type="email"],
+.left-section input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 22px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    outline: none;
+    transition: 0.3s;
+    font-size: 14px;
+}
+
+.left-section input:focus {
+    border-color: #4f74d9;
+}
+
+/* ===== FORM ROW ===== */
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.forgot {
+    text-decoration: none;
+    color: #4f74d9;
+}
+
+/* ===== BUTTON ===== */
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 6px;
+    border: none;
+    background: #4f74d9;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-btn:hover {
+    background: #3d60c4;
+}
+
+/* ===== DIVIDER ===== */
+.divider {
+    text-align: center;
+    font-size: 14px;
+    margin: 30px 0 18px;
+    color: #777;
+}
+
+/* ===== SOCIAL ===== */
+.socials {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.social-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* ===== BOTTOM TEXT ===== */
+.bottom-text {
+    margin-top: 25px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.bottom-text a {
+    color: #4f74d9;
+    text-decoration: none;
+}
+
+/* ===== RIGHT SECTION ===== */
+.right-section {
+    width: 50%;
+    background: #eef2fb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== ILLUSTRATION (INCREASED SIZE) ===== */
+.illustration-container {
+    width: 85%;   /* increased */
+    text-align: center;
+}
+
+.illustration-container img {
+    width: 100%;
+}
+/* ===== AUTH WRAPPER (REGISTER PAGE FIX) ===== */
+.auth-wrapper {
+    width: 1100px;
+    height: 600px;
+    background: white;
+    border-radius: 20px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+}
+
+/* LEFT PANEL */
+.auth-left {
+    width: 45%;
+    background: linear-gradient(135deg, #4f74d9, #6c8de6);
+    color: white;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.auth-left .brand {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+/* RIGHT PANEL */
+.auth-right {
+    width: 55%;
+    padding: 60px;
+}
+
+.auth-right h2 {
+    margin-bottom: 10px;
+}
+
+.auth-right .subtitle {
+    margin-bottom: 30px;
+    color: #777;
+}
+
+/* TOP LINK */
+.top-link {
+    text-align: right;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.top-link a {
+    color: #4f74d9;
+    text-decoration: none;
+}
+
+/* BUTTON */
+.primary-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    background: #4f74d9;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.primary-btn:hover {
+    background: #3d60c4;
+}

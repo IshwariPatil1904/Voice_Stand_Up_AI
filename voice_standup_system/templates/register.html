@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - VoiceStandup AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=soft-ui-v3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=soft-ui-v3">
+</head>
+<body class="signup-page">
+
+<main class="signup-shell">
+    <section class="signup-panel">
+        <div class="signup-brand">VoiceStandup</div>
+
+        <h1>Create Account</h1>
+        <p class="signup-subtitle">Sign up to get started!</p>
+
+        <form method="POST" action="/register" class="signup-form">
+            <label for="name">Full Name</label>
+            <input
+                type="text"
+                name="name"
+                id="name"
+                placeholder=""
+                autocomplete="name"
+                required
+            >
+
+            <label for="email">Email Address</label>
+            <input
+                type="email"
+                name="email"
+                id="email"
+                placeholder=""
+                autocomplete="email"
+                required
+            >
+
+            <label for="password">Password</label>
+            <input
+                type="password"
+                name="password"
+                id="password"
+                placeholder=""
+                autocomplete="new-password"
+                minlength="6"
+                required
+            >
+            <p class="field-hint">Password must be at least 6 characters long.</p>
+
+            <label for="confirm_password">Confirm Password</label>
+            <input
+                type="password"
+                name="confirm_password"
+                id="confirm_password"
+                placeholder=""
+                autocomplete="new-password"
+                minlength="6"
+                required
+            >
+
+            <button type="submit" class="signup-submit">Sign Up</button>
+        </form>
+
+        {% if message %}
+        <div class="form-error">{{ message }}</div>
+        {% endif %}
+
+        <p class="signup-footer">
+            Already have an account?
+            <a href="/login">Login</a>
+        </p>
+    </section>
+</main>
+
+</body>
+</html>

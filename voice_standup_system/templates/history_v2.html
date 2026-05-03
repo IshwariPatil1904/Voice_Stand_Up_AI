@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - VoiceStandup AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=soft-ui-v3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=soft-ui-v3">
+</head>
+<body class="app-body history-body">
+
+<div class="history-frame">
+    <aside class="history-sidebar">
+        <div class="history-brand">VoiceStandup AI</div>
+
+        <nav class="history-nav">
+            <a href="/dashboard">
+                <span class="history-nav-icon"><svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8H6v-6h5v6h7v-7"/></svg></span>
+                Dashboard
+            </a>
+            <a href="{{ '/meeting/' ~ active_meeting if active_meeting else '/record' }}">
+                <span class="history-nav-icon"><svg viewBox="0 0 24 24"><path d="M12 4v8m-4 0a4 4 0 0 0 8 0V6a4 4 0 0 0-8 0v6m-2 0a6 6 0 0 0 12 0M12 18v3"/></svg></span>
+                Live Meeting
+            </a>
+            <a href="/dashboard#analytics">
+                <span class="history-nav-icon"><svg viewBox="0 0 24 24"><path d="M5 19V9m7 10V5m7 14v-8M4 19h16"/></svg></span>
+                Analytics
+            </a>
+            <a href="/search" class="active">
+                <span class="history-nav-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg></span>
+                Search &amp; History
+            </a>
+            <a href="/dashboard#settings">
+                <span class="history-nav-icon"><svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm8 4h2M2 12h2m13.7-5.7 1.4-1.4M4.9 19.1l1.4-1.4m0-11.4L4.9 4.9m14.2 14.2-1.4-1.4"/></svg></span>
+                Settings
+            </a>
+        </nav>
+
+        <div class="history-storage-card">
+            <span>Storage Used</span>
+            <div class="storage-track"><span style="width: 38%"></span></div>
+            <strong>2.4 GB / 10 GB</strong>
+            <a href="/dashboard">Upgrade Plan</a>
+        </div>
+    </aside>
+
+    <section class="history-workspace">
+        <header class="history-topbar">
+            <div class="history-title-row">
+                <span class="menu-lines"></span>
+                <div>
+                    <h1>History</h1>
+                    <p>View your past meetings.</p>
+                </div>
+            </div>
+
+            <div class="history-top-actions">
+                <a href="/history" class="history-icon-btn history-notification" aria-label="Notifications">
+                    <svg viewBox="0 0 24 24"><path d="M18 16v-5a6 6 0 0 0-12 0v5l-2 2h16zM10 20h4"/></svg>
+                    <span>1</span>
+                </a>
+                <span class="history-profile-avatar">{{ user[:1]|upper }}</span>
+                <span class="history-profile-name">{{ user }}</span>
+                <span class="history-profile-caret"></span>
+            </div>
+        </header>
+
+        <main class="history-content">
+            <section class="history-filter-bar" aria-label="History filters">
+                <input id="history-search" type="search" value="" hidden>
+
+                <label class="history-filter-card">
+                    <span class="filter-icon"><svg viewBox="0 0 24 24"><path d="M7 3v4m10-4v4M5 8h14M5 5h14v15H5z"/></svg></span>
+                    <span>
+                        <small>Date</small>
+                        <select id="filter-date-mode">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">Last 7 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </span>
+                    <span class="select-caret"></span>
+                </label>
+
+                <label class="history-filter-card">
+                    <span class="filter-icon"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 8a7 7 0 0 1 14 0z"/></svg></span>
+                    <span>
+                        <small>User</small>
+                        <select id="filter-user">
+                            <option value="">All Users</option>
+                        </select>
+                    </span>
+                    <span class="select-caret"></span>
+                </label>
+
+                <label class="history-filter-card">
+                    <span class="filter-icon"><svg viewBox="0 0 24 24"><path d="M12 4 3 20h18zM12 9v5m0 3h.01"/></svg></span>
+                    <span>
+                        <small>Blockers</small>
+                        <select id="filter-blockers">
+                            <option value="">All Meetings</option>
+                            <option value="with">Only Blockers</option>
+                            <option value="without">No Blockers</option>
+                        </select>
+                    </span>
+                    <span class="select-caret"></span>
+                </label>
+
+                <button id="history-reset" type="button" class="history-reset-btn">
+                    <svg viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M5 15a7 7 0 0 0 12 3M19 9A7 7 0 0 0 7 6"/></svg>
+                    Reset
+                </button>
+            </section>
+
+            <div id="custom-date-row" class="history-custom-dates" hidden>
+                <label>
+                    From
+                    <input id="filter-date-from" type="date">
+                </label>
+                <label>
+                    To
+                    <input id="filter-date-to" type="date">
+                </label>
+            </div>
+
+            <section class="history-list-shell" aria-label="Past meetings">
+                <div id="history-empty" class="history-empty" hidden>No meetings match your filters.</div>
+
+                <div id="history-list" class="history-rows">
+                    {% for entry in entries %}
+                        {% if entry.kind == "meeting" %}
+                            {% set blocker_count = entry.counts.blockers %}
+                            {% set participant_count = entry.participants|length %}
+                            {% set date_day = entry.created_at[8:10] if entry.created_at else loop.index %}
+                            <article class="history-row"
+                                tabindex="0"
+                                data-date="{{ entry.created_at[:10] }}"
+                                data-created="{{ entry.created_at }}"
+                                data-users="{% for participant in entry.participants %}{{ participant.user|lower }}{% if not loop.last %},{% endif %}{% endfor %}"
+                                data-user-labels="{% for participant in entry.participants %}{{ participant.user }}{% if not loop.last %},{% endif %}{% endfor %}"
+                                data-blockers="{{ blocker_count }}"
+                                data-search="{{ entry.title|lower }} {{ entry.meeting_name|lower }} {{ entry.meeting_id|lower }} {{ entry.summary_text|lower }}"
+                            >
+                                <div class="history-date-tile tone-{{ (loop.index0 % 4) + 1 }}">
+                                    <svg viewBox="0 0 24 24"><path d="M7 3v4m10-4v4M5 8h14M5 5h14v15H5z"/></svg>
+                                    <strong>{{ date_day }}</strong>
+                                </div>
+
+                                <div class="history-row-copy">
+                                    <h2>{{ entry.title }}</h2>
+                                    <p>
+                                        <span>{{ entry.meeting_name or entry.title }}</span>
+                                        <span class="history-date-text">{{ entry.created_at or "Recently" }}</span>
+                                        <span>{{ entry.duration_minutes }} min</span>
+                                        <span>{{ participant_count }} participant{{ "s" if participant_count != 1 else "" }}</span>
+                                    </p>
+                                </div>
+
+                                <button type="button" class="history-edit-name" onclick="editMeetingName(event, '{{ entry.meeting_id }}')">Edit</button>
+
+                                {% if blocker_count > 0 %}
+                                <span class="history-status danger">
+                                    <svg viewBox="0 0 24 24"><path d="M12 4 3 20h18zM12 9v5m0 3h.01"/></svg>
+                                    {{ blocker_count }} Blocker{{ "s" if blocker_count != 1 else "" }}
+                                </span>
+                                {% else %}
+                                <span class="history-status success">
+                                    <svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>
+                                    No Blockers
+                                </span>
+                                {% endif %}
+
+                                <span class="history-row-arrow">
+                                    <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+                                </span>
+
+                                <template class="history-detail-template">
+                                    <div class="detail-header">
+                                        <span class="detail-kicker">Meeting {{ entry.meeting_id }}</span>
+                                        <h2>{{ entry.meeting_name or entry.title }}</h2>
+                                        <p>{{ entry.created_at or "Recently" }} | {{ entry.duration_minutes }} min | {{ participant_count }} participant{{ "s" if participant_count != 1 else "" }}</p>
+                                    </div>
+
+                                    <div class="detail-summary">
+                                        <h3>Summary</h3>
+                                        <p>{{ entry.summary_text }}</p>
+                                    </div>
+
+                                    <div class="detail-grid">
+                                        <section>
+                                            <h3>Blockers</h3>
+                                            <ul>
+                                                {% for blocker in entry.summary.Blocker %}
+                                                <li>{{ blocker }}</li>
+                                                {% else %}
+                                                <li>No blockers detected.</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </section>
+
+                                        <section>
+                                            <h3>Tasks</h3>
+                                            <ul>
+                                                {% for task in entry.summary.Task %}
+                                                <li>{{ task }}</li>
+                                                {% else %}
+                                                <li>No tasks captured.</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </section>
+
+                                        <section>
+                                            <h3>Plans</h3>
+                                            <ul>
+                                                {% for plan in entry.summary.Plan %}
+                                                <li>{{ plan }}</li>
+                                                {% else %}
+                                                <li>No plans captured.</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </section>
+
+                                        <section>
+                                            <h3>Participants</h3>
+                                            <div class="detail-participants">
+                                                {% for participant in entry.participants %}
+                                                <span>{{ participant.user }}</span>
+                                                {% else %}
+                                                <span>No participants found.</span>
+                                                {% endfor %}
+                                            </div>
+                                        </section>
+                                    </div>
+
+                                    <a href="/export/meeting/{{ entry.meeting_id }}.json" class="detail-export">Export Meeting JSON</a>
+                                </template>
+                            </article>
+                        {% else %}
+                            {% set blocker_count = entry.counts.blockers %}
+                            {% set date_day = entry.created_at[8:10] if entry.created_at else loop.index %}
+                            <article class="history-row"
+                                tabindex="0"
+                                data-date="{{ entry.created_at[:10] }}"
+                                data-created="{{ entry.created_at }}"
+                                data-users="{{ entry.user|lower }}"
+                                data-user-labels="{{ entry.user }}"
+                                data-blockers="{{ blocker_count }}"
+                                data-search="{{ entry.title|lower }} {{ entry.meeting_name|lower }} {{ entry.user|lower }} {{ entry.summary_text|lower }} {{ entry.text|lower }}"
+                            >
+                                <div class="history-date-tile tone-{{ (loop.index0 % 4) + 1 }}">
+                                    <svg viewBox="0 0 24 24"><path d="M7 3v4m10-4v4M5 8h14M5 5h14v15H5z"/></svg>
+                                    <strong>{{ date_day }}</strong>
+                                </div>
+
+                                <div class="history-row-copy">
+                                    <h2>{{ entry.title }}</h2>
+                                    <p>
+                                        <span class="history-date-text">{{ entry.created_at or "Recently" }}</span>
+                                        <span>{{ entry.duration_minutes }} min</span>
+                                        <span>1 participant</span>
+                                    </p>
+                                </div>
+
+                                {% if blocker_count > 0 %}
+                                <span class="history-status danger">
+                                    <svg viewBox="0 0 24 24"><path d="M12 4 3 20h18zM12 9v5m0 3h.01"/></svg>
+                                    {{ blocker_count }} Blocker{{ "s" if blocker_count != 1 else "" }}
+                                </span>
+                                {% else %}
+                                <span class="history-status success">
+                                    <svg viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>
+                                    No Blockers
+                                </span>
+                                {% endif %}
+
+                                <span class="history-row-arrow">
+                                    <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+                                </span>
+
+                                <template class="history-detail-template">
+                                    <div class="detail-header">
+                                        <span class="detail-kicker">Solo update</span>
+                                        <h2>{{ entry.title }}</h2>
+                                        <p>{{ entry.created_at or "Recently" }} | {{ entry.duration_minutes }} min | {{ entry.user }}</p>
+                                    </div>
+
+                                    <div class="detail-summary">
+                                        <h3>Summary</h3>
+                                        <p>{{ entry.summary_text }}</p>
+                                    </div>
+
+                                    <div class="detail-transcript">
+                                        <h3>Transcript</h3>
+                                        <p>{{ entry.text }}</p>
+                                    </div>
+
+                                    <div class="detail-grid">
+                                        <section>
+                                            <h3>Blockers</h3>
+                                            <ul>
+                                                {% for blocker in entry.analysis.Blocker %}
+                                                <li>{{ blocker }}</li>
+                                                {% else %}
+                                                <li>No blockers detected.</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </section>
+
+                                        <section>
+                                            <h3>Tasks</h3>
+                                            <ul>
+                                                {% for task in entry.analysis.Task %}
+                                                <li>{{ task }}</li>
+                                                {% else %}
+                                                <li>No tasks captured.</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </section>
+
+                                        <section>
+                                            <h3>Plans</h3>
+                                            <ul>
+                                                {% for plan in entry.analysis.Plan %}
+                                                <li>{{ plan }}</li>
+                                                {% else %}
+                                                <li>No plans captured.</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </section>
+
+                                        <section>
+                                            <h3>Participants</h3>
+                                            <div class="detail-participants">
+                                                <span>{{ entry.user }}</span>
+                                            </div>
+                                        </section>
+                                    </div>
+
+                                    <a href="/export/history.csv" class="detail-export">Export CSV</a>
+                                </template>
+                            </article>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <button id="history-load-more" type="button" class="history-load-more">Load More <span></span></button>
+            </section>
+        </main>
+    </section>
+</div>
+
+<div id="history-detail-backdrop" class="history-detail-backdrop" hidden></div>
+<aside id="history-detail-drawer" class="history-detail-drawer" aria-hidden="true">
+    <button id="history-detail-close" type="button" class="detail-close" aria-label="Close details">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div id="history-detail-content" class="history-detail-content"></div>
+</aside>
+
+<script>
+const historyRows = Array.from(document.querySelectorAll(".history-row"));
+const searchInput = document.getElementById("history-search");
+const searchToggle = document.querySelector(".history-search-toggle");
+const userFilter = document.getElementById("filter-user");
+const dateModeFilter = document.getElementById("filter-date-mode");
+const dateFromFilter = document.getElementById("filter-date-from");
+const dateToFilter = document.getElementById("filter-date-to");
+const customDateRow = document.getElementById("custom-date-row");
+const blockerFilter = document.getElementById("filter-blockers");
+const resetButton = document.getElementById("history-reset");
+const emptyState = document.getElementById("history-empty");
+const loadMoreButton = document.getElementById("history-load-more");
+const detailDrawer = document.getElementById("history-detail-drawer");
+const detailBackdrop = document.getElementById("history-detail-backdrop");
+const detailContent = document.getElementById("history-detail-content");
+const detailClose = document.getElementById("history-detail-close");
+
+let visibleLimit = 6;
+const pageSize = 6;
+
+function parseDate(value) {
+    if (!value) {
+        return null;
+    }
+
+    const parsed = new Date(`${value}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatMeetingDate(value) {
+    if (!value) {
+        return "Recently";
+    }
+
+    const normalized = value.replace(" ", "T");
+    const date = new Date(normalized);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const meetingDay = new Date(date);
+    meetingDay.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.round((today - meetingDay) / 86400000);
+    const time = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+    if (diffDays === 0) {
+        return `Today, ${time}`;
+    }
+
+    if (diffDays === 1) {
+        return `Yesterday, ${time}`;
+    }
+
+    return `${date.toLocaleDateString([], { month: "short", day: "numeric" })}, ${time}`;
+}
+
+function buildUserOptions() {
+    const users = new Map();
+
+    historyRows.forEach((row) => {
+        const values = (row.dataset.users || "").split(",");
+        const labels = (row.dataset.userLabels || "").split(",");
+
+        values.forEach((value, index) => {
+            const cleanValue = value.trim();
+            if (cleanValue) {
+                users.set(cleanValue, (labels[index] || cleanValue).trim());
+            }
+        });
+    });
+
+    Array.from(users.entries())
+        .sort((a, b) => a[1].localeCompare(b[1]))
+        .forEach(([value, label]) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = label;
+            userFilter.appendChild(option);
+        });
+}
+
+function matchesDateFilter(rowDateValue) {
+    const rowDate = parseDate(rowDateValue);
+    const mode = dateModeFilter.value;
+
+    if (!mode || !rowDate) {
+        return true;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (mode === "today") {
+        return rowDate.getTime() === today.getTime();
+    }
+
+    if (mode === "week") {
+        const weekAgo = new Date(today);
+        weekAgo.setDate(today.getDate() - 6);
+        return rowDate >= weekAgo && rowDate <= today;
+    }
+
+    if (mode === "custom") {
+        const fromDate = parseDate(dateFromFilter.value);
+        const toDate = parseDate(dateToFilter.value);
+
+        if (fromDate && rowDate < fromDate) {
+            return false;
+        }
+
+        if (toDate && rowDate > toDate) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function getFilteredRows() {
+    const query = searchInput.value.trim().toLowerCase();
+    const selectedUser = userFilter.value.trim().toLowerCase();
+    const blockerMode = blockerFilter.value;
+
+    return historyRows.filter((row) => {
+        const rowText = `${row.dataset.search || ""} ${row.innerText || ""}`.toLowerCase();
+        const users = (row.dataset.users || "").split(",").map((user) => user.trim());
+        const blockerCount = Number(row.dataset.blockers || "0");
+
+        const matchesSearch = !query || rowText.includes(query);
+        const matchesUser = !selectedUser || users.includes(selectedUser);
+        const matchesDate = matchesDateFilter(row.dataset.date);
+        const matchesBlockers =
+            !blockerMode ||
+            (blockerMode === "with" && blockerCount > 0) ||
+            (blockerMode === "without" && blockerCount === 0);
+
+        return matchesSearch && matchesUser && matchesDate && matchesBlockers;
+    });
+}
+
+function renderRows(resetLimit = false) {
+    if (resetLimit) {
+        visibleLimit = pageSize;
+    }
+
+    const filteredRows = getFilteredRows();
+
+    historyRows.forEach((row) => {
+        row.hidden = true;
+    });
+
+    filteredRows.slice(0, visibleLimit).forEach((row) => {
+        row.hidden = false;
+    });
+
+    emptyState.hidden = filteredRows.length !== 0;
+    loadMoreButton.hidden = filteredRows.length <= visibleLimit;
+}
+
+function resetFilters() {
+    searchInput.value = "";
+    userFilter.value = "";
+    dateModeFilter.value = "";
+    dateFromFilter.value = "";
+    dateToFilter.value = "";
+    blockerFilter.value = "";
+    customDateRow.hidden = true;
+    renderRows(true);
+}
+
+function openDetails(row) {
+    const template = row.querySelector(".history-detail-template");
+    if (!template) {
+        return;
+    }
+
+    detailContent.innerHTML = template.innerHTML;
+    detailDrawer.classList.add("open");
+    detailBackdrop.hidden = false;
+    detailDrawer.setAttribute("aria-hidden", "false");
+}
+
+function closeDetails() {
+    detailDrawer.classList.remove("open");
+    detailBackdrop.hidden = true;
+    detailDrawer.setAttribute("aria-hidden", "true");
+}
+
+async function editMeetingName(event, meetingId) {
+    event.stopPropagation();
+    const newName = prompt("Enter new meeting name");
+
+    if (!newName || !newName.trim()) {
+        return;
+    }
+
+    const response = await fetch("/update_meeting_name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meeting_id: meetingId, name: newName.trim() })
+    });
+
+    if (response.ok) {
+        window.location.reload();
+    }
+}
+
+historyRows.forEach((row) => {
+    const dateText = row.querySelector(".history-date-text");
+    if (dateText) {
+        dateText.textContent = formatMeetingDate(row.dataset.created);
+    }
+
+    row.addEventListener("click", () => openDetails(row));
+    row.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openDetails(row);
+        }
+    });
+});
+
+buildUserOptions();
+if (historyRows.length === 0) {
+    emptyState.textContent = "No meetings recorded yet. Start a live meeting to build history.";
+}
+renderRows(true);
+
+searchInput.addEventListener("input", () => renderRows(true));
+userFilter.addEventListener("change", () => renderRows(true));
+blockerFilter.addEventListener("change", () => renderRows(true));
+dateFromFilter.addEventListener("change", () => renderRows(true));
+dateToFilter.addEventListener("change", () => renderRows(true));
+
+dateModeFilter.addEventListener("change", () => {
+    customDateRow.hidden = dateModeFilter.value !== "custom";
+    renderRows(true);
+});
+
+resetButton.addEventListener("click", resetFilters);
+loadMoreButton.addEventListener("click", () => {
+    visibleLimit += pageSize;
+    renderRows(false);
+});
+
+if (searchToggle) {
+    searchToggle.addEventListener("click", () => {
+        searchInput.focus();
+    });
+}
+
+detailClose.addEventListener("click", closeDetails);
+detailBackdrop.addEventListener("click", closeDetails);
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+        closeDetails();
+    }
+});
+</script>
+
+</body>
+</html>

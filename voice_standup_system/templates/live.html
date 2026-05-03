@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ meeting_name }} | VoiceStandup AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/live_meeting.css') }}?v=live-reference-grid-v7">
+</head>
+<body class="live-meeting-body">
+<div
+    class="meeting-app"
+    id="meetingApp"
+    data-meeting-id="{{ meeting_id }}"
+    data-meeting-name="{{ meeting_name }}"
+    data-user="{{ user }}"
+    data-host="{{ meeting_host }}"
+    data-dashboard-url="/dashboard"
+>
+    <aside class="meeting-sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 14h2v-4H4zm4 4h2V6H8zm4 3h2V3h-2zm4-5h2V8h-2zm4 2h2v-6h-2z"></path>
+                </svg>
+            </div>
+            <div class="brand-copy">
+                <strong>VoiceStandup AI</strong>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Primary">
+            <a href="/dashboard" class="sidebar-link">
+                <span class="sidebar-link-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 11.5 12 4l8 7.5"></path>
+                        <path d="M6 10.5V20h12v-9.5"></path>
+                    </svg>
+                </span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/meeting/{{ meeting_id }}" class="sidebar-link active">
+                <span class="sidebar-link-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 17a4.5 4.5 0 0 0 4.5-4.5V7A4.5 4.5 0 0 0 7.5 7v5.5A4.5 4.5 0 0 0 12 17Z"></path>
+                        <path d="M5 11.5a7 7 0 0 0 14 0"></path>
+                        <path d="M12 18.5V21"></path>
+                    </svg>
+                </span>
+                <span>Live Meeting</span>
+            </a>
+            <a href="/analytics" class="sidebar-link">
+                <span class="sidebar-link-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 20h16"></path>
+                        <path d="M7 17V9"></path>
+                        <path d="M12 17V5"></path>
+                        <path d="M17 17v-6"></path>
+                    </svg>
+                </span>
+                <span>Analytics</span>
+            </a>
+            <a href="/search" class="sidebar-link">
+                <span class="sidebar-link-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6.5"></circle>
+                        <path d="m16 16 4 4"></path>
+                    </svg>
+                </span>
+                <span>Search &amp; History</span>
+            </a>
+            <a href="/settings" class="sidebar-link">
+                <span class="sidebar-link-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3.2"></circle>
+                        <path d="M12 2v2.3M12 19.7V22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2 12h2.3M19.7 12H22M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"></path>
+                    </svg>
+                </span>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-user-card">
+            <div class="sidebar-user-avatar">{{ user[:1]|upper }}</div>
+            <div class="sidebar-user-copy">
+                <strong>{{ user }}</strong>
+                <span><i></i>Online</span>
+            </div>
+            <span class="sidebar-user-chevron" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="m7 10 5 5 5-5"></path>
+                </svg>
+            </span>
+        </div>
+    </aside>
+
+    <div class="meeting-workspace">
+        <header class="meeting-topbar">
+            <div class="meeting-title">
+                <button type="button" class="menu-button" aria-label="Meeting menu">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 7h16M4 12h16M4 17h16"></path>
+                    </svg>
+                </button>
+                <h1>Live Meeting</h1>
+            </div>
+
+            <div class="meeting-topbar-actions">
+                <div class="meeting-id-chip">
+                    <span>Meeting ID: <strong>{{ meeting_id }}</strong></span>
+                    <button type="button" id="copyMeetingIdBtn" class="topbar-icon-button" aria-label="Copy meeting ID">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="9" y="9" width="10" height="10" rx="2"></rect>
+                            <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="topbar-stat">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M16 19a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM8 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                        <path d="M2 21a5 5 0 0 1 10 0M13 21a6 6 0 0 1 10 0"></path>
+                    </svg>
+                    <span id="participantCountTop">0</span>
+                </div>
+
+                <button type="button" class="topbar-icon-button" aria-label="Notifications">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 9a6 6 0 1 1 12 0v4.5l1.5 2.5H4.5L6 13.5Z"></path>
+                        <path d="M10 18a2 2 0 0 0 4 0"></path>
+                    </svg>
+                </button>
+
+                <div class="topbar-avatar">{{ user[:1]|upper }}</div>
+            </div>
+        </header>
+
+        <main class="meeting-main">
+            {% if message %}
+            <div class="meeting-banner">{{ message }}</div>
+            {% endif %}
+
+            <div class="meeting-layout">
+                <section class="meeting-center-column">
+                    <div class="meeting-status-row">
+                        <div class="meeting-status-left">
+                            <div class="record-pill" id="recordPill">
+                                <span class="record-dot"></span>
+                                <span>REC</span>
+                            </div>
+
+                            <div class="status-pill" id="meetingTimer">00:00:00</div>
+
+                            <div class="status-pill connection-pill" id="connectionPill">
+                                <span class="signal-bars" aria-hidden="true">
+                                    <i></i><i></i><i></i><i></i>
+                                </span>
+                                <span id="connectionStatus">Connecting...</span>
+                            </div>
+                        </div>
+
+                        <div class="meeting-status-actions">
+                            <button type="button" class="status-action-button" id="shareLinkBtn">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M10.6 13.4a4 4 0 0 0 5.7 0l2.2-2.2a4 4 0 0 0-5.7-5.7L11.4 7"></path>
+                                    <path d="M13.4 10.6a4 4 0 0 0-5.7 0l-2.2 2.2a4 4 0 0 0 5.7 5.7l1.4-1.4"></path>
+                                </svg>
+                                <span>Share Link</span>
+                            </button>
+
+                            <button type="button" class="status-action-button danger" id="endMeetingBtn">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="m9 9 6 6M15 9l-6 6"></path>
+                                    <path d="M19 7.5a2.5 2.5 0 0 0-2.5-2.5h-9A2.5 2.5 0 0 0 5 7.5v9A2.5 2.5 0 0 0 7.5 19h9a2.5 2.5 0 0 0 2.5-2.5Z"></path>
+                                </svg>
+                                <span>End Meeting</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <section class="video-stage-card" id="videoStage">
+                        <div class="video-grid" id="videoGrid" data-count="1"></div>
+                    </section>
+
+                    <section class="meeting-controls" aria-label="Meeting controls">
+                        <button type="button" class="control-button" id="toggleMicBtn">
+                            <span class="control-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 16.5a4.5 4.5 0 0 0 4.5-4.5V7A4.5 4.5 0 0 0 7.5 7v5a4.5 4.5 0 0 0 4.5 4.5Z"></path>
+                                    <path d="M5 11.5a7 7 0 0 0 14 0"></path>
+                                    <path d="M12 18.5V21"></path>
+                                </svg>
+                            </span>
+                            <span class="control-label">Mute</span>
+                        </button>
+
+                        <button type="button" class="control-button" id="toggleCameraBtn">
+                            <span class="control-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="3.5" y="6.5" width="13" height="11" rx="2"></rect>
+                                    <path d="m16.5 10 4-2.5v9l-4-2.5"></path>
+                                </svg>
+                            </span>
+                            <span class="control-label">Stop Video</span>
+                        </button>
+
+                        <button type="button" class="control-button" id="shareScreenBtn">
+                            <span class="control-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <rect x="3" y="4.5" width="18" height="12" rx="2"></rect>
+                                    <path d="M8 20h8"></path>
+                                    <path d="M12 16.5V20"></path>
+                                </svg>
+                            </span>
+                            <span class="control-label">Share Screen</span>
+                        </button>
+
+                        <button type="button" class="control-button" id="toggleChatBtn">
+                            <span class="control-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M7 18.5 3.5 21V6.5A2.5 2.5 0 0 1 6 4h12a2.5 2.5 0 0 1 2.5 2.5V16A2.5 2.5 0 0 1 18 18.5Z"></path>
+                                </svg>
+                            </span>
+                            <span class="control-label">Chat</span>
+                        </button>
+
+                        <button type="button" class="control-button" id="fullscreenBtn">
+                            <span class="control-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M8 4H4v4"></path>
+                                    <path d="M4 4 9 9"></path>
+                                    <path d="M16 4h4v4"></path>
+                                    <path d="m20 4-5 5"></path>
+                                    <path d="M8 20H4v-4"></path>
+                                    <path d="m4 20 5-5"></path>
+                                    <path d="M16 20h4v-4"></path>
+                                    <path d="m20 20-5-5"></path>
+                                </svg>
+                            </span>
+                            <span class="control-label">Full Screen</span>
+                        </button>
+
+                        <button type="button" class="control-button danger" id="leaveMeetingBtn">
+                            <span class="control-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M10 17.5H6.5A2.5 2.5 0 0 1 4 15V9a2.5 2.5 0 0 1 2.5-2.5H10"></path>
+                                    <path d="m14 8 4 4-4 4"></path>
+                                    <path d="M18 12H9"></path>
+                                </svg>
+                            </span>
+                            <span class="control-label">Leave</span>
+                        </button>
+                    </section>
+
+                    <section class="bottom-panels" id="bottomPanels">
+                        <article class="panel-card chat-panel" id="chatPanel">
+                            <div class="panel-header">
+                                <h2>Chat</h2>
+                            </div>
+
+                            <div class="panel-scroll" id="chatMessages"></div>
+
+                            <form class="chat-composer" id="chatForm">
+                                <input
+                                    type="text"
+                                    id="chatInput"
+                                    name="message"
+                                    autocomplete="off"
+                                    maxlength="1000"
+                                    placeholder="Type a message..."
+                                >
+                                <button type="submit" class="chat-send-button" aria-label="Send message">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M4 11.5 20 4l-4.5 16-4-5-7.5-3.5Z"></path>
+                                        <path d="M20 4 11.5 15"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </article>
+
+                        <article class="panel-card participants-panel">
+                            <div class="panel-header">
+                                <h2 id="participantsPanelTitle">Participants (0)</h2>
+                            </div>
+
+                            <div class="panel-scroll" id="participantsList"></div>
+                        </article>
+                    </section>
+                </section>
+
+                <aside class="meeting-right-column">
+                    <div class="insights-stack">
+                        <article class="side-card summary-card">
+                            <div class="side-card-header">
+                                <div class="side-card-title">
+                                    <span class="summary-icon">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M12 3v4"></path>
+                                            <path d="M12 17v4"></path>
+                                            <path d="M4.2 6.2 7 9"></path>
+                                            <path d="m17 15 2.8 2.8"></path>
+                                            <path d="M3 12h4"></path>
+                                            <path d="M17 12h4"></path>
+                                            <path d="m4.2 17.8 2.8-2.8"></path>
+                                            <path d="M17 9 19.8 6.2"></path>
+                                        </svg>
+                                    </span>
+                                    <h2>AI Live Summary</h2>
+                                </div>
+                                <button type="button" class="card-corner-button" id="focusSummaryBtn" aria-label="Focus summary">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M14 5h5v5"></path>
+                                        <path d="m19 5-7 7"></path>
+                                        <path d="M10 19H5v-5"></path>
+                                        <path d="m5 19 7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="summary-body">
+                                <div class="summary-row">
+                                    <strong>Live Summary</strong>
+                                    <span id="summaryUpdated">00:00</span>
+                                </div>
+                                <p id="summaryText">AI is analyzing conversation...</p>
+                            </div>
+                        </article>
+
+                        <article class="side-card">
+                            <div class="side-card-header">
+                                <div class="side-card-title">
+                                    <h2>Blockers</h2>
+                                    <span class="count-badge danger" id="blockerCount">0</span>
+                                </div>
+                            </div>
+                            <div class="side-card-scroll" id="blockersList"></div>
+                        </article>
+
+                        <article class="side-card">
+                            <div class="side-card-header">
+                                <div class="side-card-title">
+                                    <h2>Tasks</h2>
+                                    <span class="count-badge success" id="taskCount">0</span>
+                                </div>
+                            </div>
+                            <div class="side-card-scroll" id="tasksList"></div>
+                        </article>
+
+                        <article class="side-card">
+                            <div class="side-card-header">
+                                <div class="side-card-title">
+                                    <h2>Plans</h2>
+                                    <span class="count-badge primary" id="planCount">0</span>
+                                </div>
+                            </div>
+                            <div class="side-card-scroll" id="plansList"></div>
+                        </article>
+                    </div>
+
+                    <div class="ai-status-card">
+                        <div class="ai-status-copy">
+                            <span class="ai-status-icon">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M4 14h2v-4H4zm4 4h2V6H8zm4 3h2V3h-2zm4-5h2V8h-2zm4 2h2v-6h-2z"></path>
+                                </svg>
+                            </span>
+                            <span id="aiStatusText">AI is analyzing conversation...</span>
+                        </div>
+                        <div class="ai-status-live">
+                            <span class="live-dot"></span>
+                            <span>Live</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="meeting-toast" id="meetingToast" aria-live="polite"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="{{ url_for('static', filename='js/live_meeting.js') }}?v=meeting-ui-v2"></script>
+</body>
+</html>
